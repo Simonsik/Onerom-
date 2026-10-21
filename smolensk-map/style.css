@@ -1,0 +1,63 @@
+:root {font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;color:#172b3a;background:#f4f7fa}
+* {box-sizing:border-box}
+body {margin:0}
+button {font:inherit}
+.app {display:grid;grid-template-columns:350px minmax(0,1fr);height:100vh;height:100dvh}
+.panel {padding:28px 24px;background:#fff;overflow-y:auto;border-right:1px solid #e2e8ef}
+.badge {color:#23715c;background:#e9f6f0;border-radius:8px;padding:5px 9px;font-size:12px;font-weight:650}
+h1 {margin:20px 0 8px;font-size:36px;letter-spacing:-1px}
+.subtitle,.information p,footer {color:#647586;line-height:1.6}
+.subtitle {margin-bottom:28px}
+.points {display:grid;gap:12px}
+.point-button {display:flex;align-items:center;gap:12px;width:100%;padding:16px;text-align:left;border:1px solid #dce4ec;border-radius:14px;background:#fff;color:inherit;cursor:pointer}
+.point-button:hover {background:#f7fafc}
+.point-button.active {border-color:#2563eb;background:#eff5ff;box-shadow:0 0 0 2px #2563eb18}
+.point-letter {display:grid;place-items:center;flex-shrink:0;width:34px;height:34px;border-radius:11px;color:#fff;font-weight:750}
+.letter-a {background:#2563eb}
+.letter-b {background:#7c3aed}
+.coordinates {display:block;margin-top:5px;font-size:12px;color:#647586}
+.secondary {padding:10px 12px;border:1px solid #dce4ec;border-radius:10px;background:#f7f9fc;color:#344b60;cursor:pointer}
+.secondary:hover:not(:disabled) {background:#eaf0f7}
+button:disabled {opacity:.45;cursor:not-allowed}
+button:focus-visible {outline:3px solid #93b9ff;outline-offset:3px}
+.actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.status {padding:14px;border-radius:12px;background:#eef4fa;font-size:14px;line-height:1.5}
+.information {margin-top:26px}
+h2 {font-size:15px}
+.information p,footer {font-size:13px}
+footer {margin-top:30px;padding-top:18px;border-top:1px solid #e7edf3}
+.map-container {position:relative;min-width:0;min-height:0}
+#map {width:100%;height:100%;background:#e5edf0}
+.map-label {position:absolute;top:18px;right:18px;z-index:500;padding:10px 14px;border-radius:10px;background:#ffffffed;box-shadow:0 3px 16px #172b3a14;font-size:11px;font-weight:700;letter-spacing:1px;pointer-events:none}
+.map-marker {display:grid;place-items:center;width:36px;height:36px;border:3px solid #fff;border-radius:50%;color:#fff;font-size:17px;font-weight:800;box-shadow:0 3px 12px #0004}
+@media(max-width:700px) {
+.app {grid-template-columns:1fr;grid-template-rows:auto minmax(340px,1fr);height:auto;min-height:100dvh}
+.panel {padding:20px;overflow:visible}
+h1 {font-size:28px}
+.subtitle {margin-bottom:18px}
+.information,footer {display:none}
+.map-container {height:60vh;min-height:340px}
+.map-label {top:12px;right:12px;font-size:9px}
+}
+.app {grid-template-columns:380px minmax(0,1fr)}
+.panel {padding:26px 22px}
+h1 {margin:18px 0 6px}.title-dot {color:#2563eb}
+.subtitle {font-size:14px;margin-top:0;margin-bottom:24px}
+.badge {letter-spacing:1.2px;font-size:10px;background:#edf3ff;color:#2563eb}
+.section-heading {display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:24px;margin-bottom:12px}
+.section-heading h2 {margin:0;font-size:16px}.muted,.fine {color:#647586;line-height:1.55}.muted {font-size:14px}.fine {font-size:11px}
+.route-card {display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;border:1px solid #dce4ec;background:white;border-radius:12px;padding:14px 12px;margin-bottom:8px;cursor:pointer;color:#344b60}
+.route-card strong {font-size:12px}.route-card span {font-size:12px;white-space:nowrap}.route-card.chosen {border-color:#2563eb;background:#eff5ff;color:#1d4ed8}
+.demo-badge {font-size:9px;letter-spacing:1px;background:#fff1d5;color:#946315;padding:5px 7px;border-radius:5px}
+.legend {display:flex;gap:12px;font-size:11px;color:#647586}.legend span {display:flex;align-items:center;gap:5px}
+.dot {display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0}.free {background:#16a36a}.busy {background:#e9a323}.jam {background:#e04444}
+.toggles {display:flex;gap:16px;font-size:12px;margin:18px 0 10px}.toggles label {display:flex;align-items:center;gap:5px;cursor:pointer}input[type=checkbox] {accent-color:#2563eb}
+.road-row {display:flex;width:100%;align-items:center;gap:8px;border:0;border-bottom:1px solid #edf1f5;padding:12px 0;background:white;text-align:left;cursor:pointer;color:#344b60;font-size:12px}.road-row:hover {background:#f7f9fc}.road-row small {margin-left:auto;color:#647586;font-size:10px}
+.import-button {display:block;border:1px dashed #bccbda;border-radius:10px;padding:12px;text-align:center;font-size:12px;cursor:pointer;color:#344b60}.import-button:focus-within {outline:3px solid #93b9ff}.import-button input {display:block;max-width:100%;margin-top:8px;font-size:11px}
+.text-button {border:0;color:#2563eb;background:transparent;font-size:12px;cursor:pointer}
+.map-marker.a {background:#2563eb}.map-marker.b {background:#7c3aed}
+.camera-marker {display:grid;place-items:center;background:#172b3a;color:white;border:3px solid white;border-radius:7px;width:26px;height:26px;box-shadow:0 2px 8px #0004;font-size:14px}
+.map-label span {color:#2563eb;padding:0 6px}footer {font-size:11px}
+@media(max-width:700px){.app{display:flex;flex-direction:column;height:auto}.panel{padding:20px;order:2}.map-container{order:1;height:48dvh;min-height:300px;position:sticky;top:0;z-index:600;box-shadow:0 4px 18px #172b3a18}.map-label{font-size:9px;top:12px;right:12px}header h1{font-size:28px;margin-top:14px}.subtitle{margin-bottom:18px}.points{gap:8px}.point-button{padding:12px}.status{margin:12px 0}footer{display:block}}
+
+.filter-label {display:grid;gap:6px;font-size:12px;color:#647586}.filter-label select {padding:10px;border:1px solid #dce4ec;border-radius:8px;background:white;color:#172b3a}.time-filters {display:flex;gap:12px;margin-top:12px;font-size:12px}.time-filters label {display:flex;align-items:center;gap:6px}.time-filters input {max-width:120px;padding:6px;border:1px solid #dce4ec;border-radius:6px}#detector-list {display:grid;grid-template-columns:1fr 1fr;max-height:220px;overflow:auto;gap:0 10px}.detector-marker {display:flex;flex-direction:column;align-items:center;justify-content:center;width:48px;height:42px;background:#172b3a;border:2px solid white;border-radius:10px;color:white;box-shadow:0 3px 10px #0003}.detector-marker b {font-size:11px}.detector-marker span {font-size:12px;color:#a8d5ff}

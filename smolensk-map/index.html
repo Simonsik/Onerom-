@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Смоленск — дороги и маршруты</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><link rel="stylesheet" href="style.css">
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script defer src="script.js"></script>
+</head>
+<body><main class="app"><aside class="panel">
+<header><span class="badge">ГОРОД В ДВИЖЕНИИ</span><h1>Смоленск<span class="title-dot">.</span></h1><p class="subtitle">Дороги, камеры и ваш маршрут</p></header>
+<section class="points" aria-label="Точки маршрута">
+<button id="select-a" class="point-button" type="button"><span class="point-letter letter-a">А</span><span><strong>Откуда</strong><span id="coordinates-a" class="coordinates">Выберите точку на карте</span></span></button>
+<button id="swap" class="secondary" type="button" disabled>⇅ Поменять местами</button>
+<button id="select-b" class="point-button" type="button"><span class="point-letter letter-b">Б</span><span><strong>Куда</strong><span id="coordinates-b" class="coordinates">Выберите точку на карте</span></span></button>
+</section>
+<div class="actions"><button id="reset" class="secondary" type="button">Сбросить</button><button id="center" class="secondary" type="button">Показать город</button></div>
+<p id="status" class="status" role="status" aria-live="polite">Загружаем карту…</p>
+<section aria-label="Варианты маршрута"><div class="section-heading"><h2>Ваш маршрут</h2><button id="retry" class="text-button" type="button" hidden>Повторить</button></div><div id="routes"><p class="muted">Выберите А и Б. Построим автомобильные маршруты по дорогам.</p></div><p class="fine">Выбираем самый короткий среди полученных вариантов. Время — расчётное, без учёта пробок. Альтернативы доступны не для всех направлений.</p></section>
+<section class="detector-section"><div class="section-heading"><h2>Проезды через детекторы</h2><span class="demo-badge">15.10.2025</span></div>
+<label class="filter-label">Выборка<select id="dataset"><option value="0">Выборка 1</option><option value="1">Выборка 2</option></select></label>
+<div class="time-filters"><label>С <input id="time-from" type="time" value="00:00"></label><label>По <input id="time-to" type="time" value="23:59"></label></div>
+<p id="detector-summary" class="fine" role="status" aria-live="polite"></p><div id="detector-list"></div>
+<p class="fine">Интервал включает обе границы с точностью до минуты. Число проездов — интенсивность наблюдений, не показатель пробки.</p></section><section class="traffic-section"><div class="section-heading"><h2>Обстановка на дорогах</h2><span id="data-badge" class="demo-badge">ДЕМО</span></div>
+<div class="legend"><span><i class="dot free"></i>Свободно</span><span><i class="dot busy"></i>Плотно</span><span><i class="dot jam"></i>Пробка</span></div>
+<div class="toggles"><label><input id="show-traffic" type="checkbox" checked> Загруженность</label><label><input id="show-cameras" type="checkbox" checked> Камеры</label></div>
+<div id="roads"></div><p id="data-note" class="fine">Демонстрационные участки и камеры. Это не текущая дорожная обстановка.</p>
+<label class="import-button">Загрузить дороги и камеры · JSON<input id="import-data" type="file" accept=".json,application/json"></label>
+<p id="data-status" class="fine" role="status" aria-live="polite"></p></section>
+<footer>Точки можно перетаскивать. Нажмите на линию маршрута, чтобы выбрать другой путь. Цветные участки показываются отдельно и не влияют на расчёт.</footer>
+</aside><section class="map-container" aria-label="Карта Смоленска"><div id="map"></div><div class="map-label">СМОЛЕНСК <span> / </span> ДОРОГИ И МАРШРУТЫ</div></section></main></body></html>
