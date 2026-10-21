@@ -6,6 +6,12 @@ from datetime import datetime, timedelta
 ROOT=Path(__file__).resolve().parent.parent
 NS={'s':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
 def rows(path):
+ """Читает строки первого листа XLSX из файла path.
+
+ Возвращает список словарей: ключ — буква столбца, значение — текст
+ ячейки. Разбирает ZIP/XML, общие строки и встроенный текст;
+ не вычисляет формулы и не читает остальные листы.
+ """
  with zipfile.ZipFile(path) as z:
   strings=[]
   if 'xl/sharedStrings.xml' in z.namelist():
@@ -20,6 +26,13 @@ def rows(path):
    out.append(vals)
   return out
 def load_workbooks(source):
+ """Загружает координаты детекторов и две выборки из каталога source.
+
+ Разбирает CSV в ячейке или четыре отдельных столбца; преобразует
+ ISO-время и числовые даты Excel. Проверяет детекторы, номера и скорость.
+ Ошибочные строки и точные дубликаты исключает из records, сохраняя
+ причины в issues. Возвращает sensors и datasets со статистикой импорта.
+ """
  source=Path(source)
  sensors=[{'name':r['A'].strip(),'coordinates':[float(r['B']),float(r['C'])]} for r in rows(source/'Таблица координат датчиков.xlsx')[1:]]
  known={s['name'] for s in sensors}; datasets=[]
