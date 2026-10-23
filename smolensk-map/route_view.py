@@ -22,7 +22,7 @@ LEVELS = {'free': 'Свободно', 'busy': 'Плотное движение',
 
 
 class RouteView:
-    """Визуальная часть MapApplication.
+    """Визуальная часть MapApplicationаааааа.
 
     Использует map, L, routes, active_route, route_layer, route_traffic.
     routes — готовый ответ API; active_route — выбор пользователя.
