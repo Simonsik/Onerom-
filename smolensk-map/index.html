@@ -9,7 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/brython@3.13.2/brython_stdlib.js"></script>
 <script type="text/python" src="/client.py"></script>
 </head>
-<body onload="brython()"><main class="app"><aside class="panel">
+<body data-map-theme="graphite" onload="brython()"><main class="app"><aside class="panel">
 <header><span class="badge">ГОРОД В ДВИЖЕНИИ</span><h1>Смоленск<span class="title-dot">.</span></h1><p class="subtitle">Дороги, камеры и ваш маршрут</p></header>
 <section class="points" aria-label="Точки маршрута">
 <button id="select-a" class="point-button" type="button"><span class="point-letter letter-a">А</span><span><strong>Откуда</strong><span id="coordinates-a" class="coordinates">Выберите точку на карте</span></span></button>
@@ -30,4 +30,4 @@
 <label class="import-button">Загрузить дороги и камеры · JSON<input id="import-data" type="file" accept=".json,application/json"></label>
 <p id="data-status" class="fine" role="status" aria-live="polite"></p></section>
 <footer>Точки можно перетаскивать. Нажмите на линию маршрута, чтобы выбрать другой путь. Цветные линии выбранного маршрута показывают оценку по камерам. Дороги из импортированного JSON показываются отдельно и не влияют на расчёт.</footer>
-</aside><section class="map-container" aria-label="Карта Смоленска"><div id="map"></div><div class="map-label">СМОЛЕНСК <span> / </span> ДОРОГИ И МАРШРУТЫ</div></section></main></body></html>
+</aside><section class="map-container" aria-label="Карта Смоленска"><div id="map"></div><div class="map-theme-control"><label for="map-theme">Оттенок карты</label><select id="map-theme"><option value="graphite">Графит</option><option value="midnight">Ночной синий</option><option value="plum">Тёмная слива</option><option value="light">Светлая карта</option></select></div><div class="map-label">СМОЛЕНСК <span> / </span> ДОРОГИ И МАРШРУТЫ</div></section></main></body></html>

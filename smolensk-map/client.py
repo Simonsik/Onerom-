@@ -126,6 +126,12 @@ class MapApplication:
         self.route_traffic = self.L.layerGroup().addTo(self.map)
         self.map.on('click', self.map_click)
         tiles.on('tileerror', self.tile_error)
+        try:
+            saved_theme = window.localStorage.getItem('smolensk-map-theme')
+        except Exception:
+            saved_theme = None
+        self.set_map_theme(saved_theme or 'graphite')
+        document['map-theme'].bind('change', lambda event: self.set_map_theme(event.target.value))
         for key in ('a', 'b'):
             document['select-' + key].bind('click', lambda event, key=key: self.select(key))
         document['swap'].bind('click', self.swap)
@@ -141,6 +147,17 @@ class MapApplication:
         self.render_data()
         self.render_detectors()
         self.select('a')
+
+    def set_map_theme(self, theme):
+        """Меняет оттенок подложки, сохраняя цвета маршрутов и камер."""
+        if theme not in ('graphite', 'midnight', 'plum', 'light'):
+            theme = 'graphite'
+        document.body.setAttribute('data-map-theme', theme)
+        document['map-theme'].value = theme
+        try:
+            window.localStorage.setItem('smolensk-map-theme', theme)
+        except Exception:
+            pass
 
     def tile_error(self, event):
         """Один раз сообщает об ошибке загрузки тайлов; event — событие Leaflet."""
