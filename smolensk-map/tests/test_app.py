@@ -74,7 +74,9 @@ class ApplicationTests(unittest.TestCase):
                 self.assertIn('text/html', response.headers['Content-Type'])
                 self.assertIn(b'/client.py', response.read())
             with urlopen(base + '/client.py') as response:
-                self.assertIn(b'class MapApplication:', response.read())
+                self.assertIn(b'class MapApplication(RouteView):', response.read())
+            with urlopen(base + '/route_view.py') as response:
+                self.assertIn(b'class RouteView:', response.read())
             with urlopen(base + '/api/bootstrap') as response:
                 self.assertEqual(len(json.load(response)['datasets']), 2)
             with urlopen(base + '/api/detectors?dataset=1') as response:

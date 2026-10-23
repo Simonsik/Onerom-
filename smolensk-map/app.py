@@ -19,7 +19,7 @@ from data.import_xlsx import load_workbooks
 from traffic import camera_statistics, rank_routes, detour_points, distinct_route, sensible_detour
 
 ROOT = Path(__file__).resolve().parent
-STATIC = {'/': 'index.html', '/index.html': 'index.html', '/style.css': 'style.css', '/client.py': 'client.py'}
+STATIC = {'/': 'index.html', '/index.html': 'index.html', '/style.css': 'style.css', '/client.py': 'client.py', '/route_view.py': 'route_view.py'}
 
 
 def initialize_database(path, source=ROOT / 'data'):
