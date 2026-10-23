@@ -21,6 +21,26 @@ def camera(name, lng, speed=10, samples=10, lat=54):
 
 class TrafficTests(unittest.TestCase):
     """Проверяет задержки, покрытие, цвета и выбор быстрого варианта."""
+    def test_passage_threshold_applies_to_every_camera_at_normal_speed(self):
+        for name in ('D1', 'D2', 'D18'):
+            for count, level in ((19, 'free'), (20, 'jam'), (37, 'jam')):
+                sensor = dict(camera(name, 32.01, speed=50), passages=count)
+                traffic = assess_route(route([[32, 54], [32.02, 54]]), [sensor])['traffic']
+                section = next(s for s in traffic['sections'] if s['level'] != 'unknown')
+                self.assertEqual(section['level'], level)
+
+    def test_shortest_route_is_preserved_when_service_returns_fastest_first(self):
+        short = route([[32, 54], [32.02, 54]], 100, 1200)
+        fast = route([[32, 54], [32, 54.01], [32.02, 54.01], [32.02, 54]], 200, 3000)
+        cameras = [camera('A', 32.002), camera('B', 32.018)]
+        with patch('app.fetch_route', return_value={'code': 'Ok', 'routes': [fast, short]}), \
+                patch('app.detour_points', return_value=[]):
+            result = app.find_routes('32,54;32.02,54', cameras, 0, '07:00', '08:00')
+        self.assertEqual(result['routes'][0]['routeRole'], 'detour')
+        self.assertEqual(result['routes'][0]['distance'], 3000)
+        self.assertEqual(result['routes'][1]['distance'], 1200)
+        self.assertIn('jam', [s['level'] for s in result['routes'][1]['traffic']['sections']])
+
     def test_slower_short_route_loses(self):
         """Короткий путь с замедлением уступает длинному по расчётному времени."""
         short = route([[32, 54], [32.01, 54], [32.02, 54]])
@@ -36,13 +56,36 @@ class TrafficTests(unittest.TestCase):
     def test_missing_sparse_and_single_camera_are_unknown(self):
         """Нет камер или недостаточно наблюдений — нет вывода о свободной дороге."""
         line = route([[32, 54], [32.02, 54]])
-        for cameras in ([], [camera('A', 32.005)],
+        for cameras in ([], [camera('A', 32.005, samples=2)],
                         [camera('A', 32), camera('B', 32.02, samples=2)],
                         [camera('A', 32, speed=None, samples=0), camera('B', 32.02)]):
             result = assess_route(line, cameras)['traffic']
             self.assertEqual(result['duration'], 100)
             self.assertEqual(result['coverage'], 0)
             self.assertTrue(all(s['level'] == 'unknown' for s in result['sections']))
+
+    def test_single_slow_camera_marks_local_jam_and_triggers_detour_search(self):
+        direct = route([[32, 54], [32.02, 54]])
+        cameras = [camera('D2', 32.01, speed=8)]
+        traffic = assess_route(direct, cameras)['traffic']
+        jam = next(s for s in traffic['sections'] if s['level'] == 'jam')
+        self.assertEqual(jam['source'], 'single-camera')
+        self.assertEqual(jam['distance'], 300)
+        self.assertGreater(traffic['delay'], 0)
+        self.assertLess(traffic['coverage'], 100)
+        with patch('app.fetch_route', return_value={'code': 'Ok', 'routes': [direct]}), \
+                patch('app.detour_points', return_value=[]) as search:
+            app.find_routes('32,54;32.02,54', cameras, 0, '00:00', '23:59')
+        search.assert_called_once()
+
+    def test_slower_alternative_remains_visible_for_congested_route(self):
+        direct = route([[32, 54], [32.02, 54]])
+        alternative = route([[32, 54], [32, 54.01], [32.02, 54.01], [32.02, 54]], 2000, 3000)
+        with patch('app.fetch_route', return_value={'code': 'Ok', 'routes': [direct, alternative]}), \
+                patch('app.detour_points', return_value=[]):
+            result = app.find_routes('32,54;32.02,54', [camera('D2', 32.01, speed=8)], 0, '00:00', '23:59')
+        self.assertEqual([r['routeRole'] for r in result['routes']], ['original', 'alternative'])
+        self.assertGreater(result['routes'][1]['traffic']['duration'], result['routes'][0]['traffic']['duration'])
 
     def test_distant_camera_and_long_gap(self):
         """Далёкие камеры и промежутки больше 3 км не дают оценку загруженности."""

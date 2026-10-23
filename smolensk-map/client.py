@@ -318,11 +318,17 @@ class MapApplication:
         for i, route in enumerate(self.routes):
             button = html.BUTTON(type='button', Class='route-card' + (' chosen' if i == self.active_route else ''))
             button.setAttribute('aria-pressed', str(i == self.active_route).lower())
-            label = 'Лучший объезд' if route.get('routeRole') == 'detour' else 'Исходный путь' if route.get('routeRole') == 'original' else 'Лучший по оценке времени' if i == 0 else 'Исходный путь'
+            label = 'Быстрее с учётом пробок' if route.get('routeRole') == 'detour' else 'Альтернатива · медленнее' if route.get('routeRole') == 'alternative' else 'Кратчайший из найденных' if route.get('routeRole') == 'original' else 'Лучший по оценке времени' if i == 0 else 'Исходный путь'
             button <= html.STRONG(label)
             traffic = route.get('traffic', {})
             minutes = max(1, math.floor(traffic.get('duration', route['duration']) / 60 + 0.5))
             button <= html.SPAN(f"{route['distance'] / 1000:.1f} км · ≈ {minutes} мин")
+            if route.get('routeRole') == 'detour':
+                original = next(r for r in self.routes if r.get('routeRole') == 'original')
+                saved = (original['traffic']['duration'] - traffic['duration']) / 60
+                button <= html.SMALL(f'Экономия времени: ≈ {saved:.1f} мин')
+            if route.get('routeRole') == 'alternative':
+                button <= html.SMALL('Объезд найден, но выигрыша по расчётному времени нет')
             button <= html.SMALL(f"Камер: {len(traffic.get('cameras', []))} · покрытие данными: {traffic.get('coverage', 0)}%")
             congested = any(s['level'] in ('busy', 'jam') for s in traffic.get('sections', []))
             if congested:
@@ -365,7 +371,9 @@ class MapApplication:
         panel <= html.P('Синий контур — лучший по расчётному времени путь. Красный путь — вариант с загруженным участком; красным показаны заторы всех вариантов, даже при выборе объезда. Наличие затора на части пути не означает, что весь путь загружен.', Class='fine')
         source = f"Выборка {int(document['dataset'].value) + 1} за 15.10.2025, {document['time-from'].value}–{document['time-to'].value}"
         panel <= html.P(f"{source}. Покрытие: {traffic.get('coverage', 0)}% пути. Дополнительное время: ≈ {traffic.get('delay', 0) / 60:.1f} мин.", Class='fine')
-        panel <= html.P('Красная линия — загруженный участок выбранного маршрута; более толстая — сильное замедление. Зелёный — небольшое замедление; серый пунктир — нет оценки. Привязка камер в пределах 35 м приблизительная, направление неизвестно.', Class='fine')
+        if any(s.get('source') == 'single-camera' for s in traffic.get('sections', [])):
+            panel <= html.P('Оценка по одной камере: скорость приблизительно распространяется на 150 м дороги в каждую сторону от камеры. Точная длина затора неизвестна.', Class='fine')
+        panel <= html.P('Порог модели: от 20 проездов за выбранный интервал — условный затор для всех камер; время участка увеличивается минимум втрое. Красная линия — загруженный участок выбранного маршрута; более толстая — сильное замедление. Зелёный — небольшое замедление; серый пунктир — нет оценки. Привязка камер в пределах 35 м приблизительная, направление неизвестно.', Class='fine')
         if not any(s['level'] in ('busy', 'jam') for s in traffic.get('sections', [])):
             panel <= html.P('На участках с данными заметное замедление не обнаружено. Неизвестные участки не считаются свободными.', Class='fine')
         for camera in traffic.get('cameras', []):

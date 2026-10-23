@@ -6,6 +6,15 @@ from statistics import median
 MATCH_METERS = 35
 MIN_SAMPLES = 3
 MAX_SECTION_METERS = 3000
+SINGLE_CAMERA_RADIUS = 150
+JAM_PASSAGES = 20
+
+
+def delay_factor(camera):
+    """Общий порог потока для всех камер; задержка по потоку условная."""
+    speed_factor = camera['referenceSpeed'] / max(camera['speed'], 1)
+    flow_factor = 3 if camera.get('passages', 0) >= JAM_PASSAGES else 1
+    return min(10, max(1, speed_factor, flow_factor))
 
 
 def camera_statistics(db, dataset, start, end):
@@ -29,6 +38,7 @@ def camera_statistics(db, dataset, start, end):
         values = selected[name]
         stats.append({
             'name': name, 'coordinates': [lat, lng], 'samples': len(values),
+            'passages': len(values),
             'speed': median(values) if values else None,
             'referenceSpeed': reference[math.ceil(.85 * len(reference)) - 1] if reference else None,
         })
@@ -95,6 +105,8 @@ def assess_route(route, cameras):
     и длине до 3 км. Коэффициент задержки — среднее отношений базовой
     скорости к медианной, ограниченное диапазоном 1–10. Базовое время
     OSRM распределяется по длине; это модель, а не измеренное время пути.
+    При единственной камере с достаточными данными оценивается только
+    локальная зона ±150 м; это предположение, не измеренная длина затора.
     Неизвестные участки сохраняют базовое время и серый цвет.
     """
     coordinates = route['geometry']['coordinates']
@@ -110,6 +122,24 @@ def assess_route(route, cameras):
     matched.sort(key=lambda camera: camera['offset'])
     sections, covered, delay = [], 0.0, 0.0
     cursor = 0.0
+    # Одна камера измеряет скорость локально: не распространяем её на весь путь.
+    if len(matched) == 1:
+        camera = matched[0]
+        if camera['samples'] >= MIN_SAMPLES and camera['referenceSpeed'] and camera['speed'] is not None:
+            start = max(0, camera['offset'] - SINGLE_CAMERA_RADIUS)
+            end = min(total, camera['offset'] + SINGLE_CAMERA_RADIUS)
+            if start > 0:
+                sections.append({'level': 'unknown', 'geometry': slice_geometry(coordinates, lengths, 0, start)})
+            factor = delay_factor(camera)
+            sections.append({
+                'from': camera['name'], 'to': camera['name'], 'source': 'single-camera',
+                'level': 'jam' if 1 / factor < .4 else 'busy' if 1 / factor < .7 else 'free',
+                'distance': round(end - start), 'speed': camera['speed'], 'factor': round(factor, 2),
+                'geometry': slice_geometry(coordinates, lengths, start, end),
+            })
+            covered = end - start
+            delay = route['duration'] * covered / total * (factor - 1) if total else 0
+            cursor = end
     for left, right in zip(matched, matched[1:]):
         start, end = left['offset'], right['offset']
         if end - start < 1:
@@ -121,7 +151,9 @@ def assess_route(route, cameras):
         section = {'from': left['name'], 'to': right['name'], 'level': 'unknown',
                    'distance': round(end - start), 'geometry': slice_geometry(coordinates, lengths, start, end)}
         if known:
-            factor = min(10, max(1, sum(c['referenceSpeed'] / max(c['speed'], 1) for c in (left, right)) / 2))
+            factor = min(10, max(1, sum(delay_factor(c) for c in (left, right)) / 2))
+            if any(c.get('passages', 0) >= JAM_PASSAGES for c in (left, right)):
+                factor = max(3, factor)
             ratio = 1 / factor
             section.update(level='jam' if ratio < .4 else 'busy' if ratio < .7 else 'free',
                            speed=round((left['speed'] + right['speed']) / 2, 1),
@@ -155,7 +187,7 @@ def rank_routes(result, cameras, dataset, start, end):
     return dict(result, routes=routes, trafficContext={
         'dataset': dataset, 'from': start, 'to': end, 'historical': True,
         'matchingRadius': MATCH_METERS, 'minSamples': MIN_SAMPLES,
-        'method': 'camera-speed-ratio', 'candidates': len(routes),
+        'method': 'camera-speed-and-passage-threshold', 'jamPassages': JAM_PASSAGES, 'candidates': len(routes),
     })
 
 

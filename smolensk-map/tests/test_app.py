@@ -35,10 +35,10 @@ class ApplicationTests(unittest.TestCase):
         """
         with sqlite3.connect(self.path) as db:
             self.assertEqual(len(app.bootstrap(db)['sensors']), 18)
-            self.assertEqual(app.detector_counts(db, 0, '00:00', '23:59')['total'], 3002)
-            self.assertEqual(app.detector_counts(db, 0, '00:00', '23:59')['vehicles'], 1327)
-            self.assertEqual(app.detector_counts(db, 1, '00:00', '23:59')['total'], 3713)
-            self.assertEqual(app.detector_counts(db, 1, '00:00', '23:59')['vehicles'], 1400)
+            self.assertEqual(app.detector_counts(db, 0, '00:00', '23:59')['total'], 602)
+            self.assertEqual(app.detector_counts(db, 0, '00:00', '23:59')['vehicles'], 127)
+            self.assertEqual(app.detector_counts(db, 1, '00:00', '23:59')['total'], 1313)
+            self.assertEqual(app.detector_counts(db, 1, '00:00', '23:59')['vehicles'], 200)
             result = app.detector_counts(db, 0, '06:00', '06:00')
             self.assertEqual(result, {'counts': {'D17': 1}, 'total': 1, 'vehicles': 1})
             self.assertEqual(app.detector_counts(db, 0, '00:00', '01:00')['total'], 0)
@@ -50,7 +50,7 @@ class ApplicationTests(unittest.TestCase):
         """Повторно импортирует таблицы и проверяет отсутствие удвоения записей."""
         app.initialize_database(self.path)
         with sqlite3.connect(self.path) as db:
-            self.assertEqual(db.execute('SELECT COUNT(*) FROM passages').fetchone()[0], 6715)
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM passages').fetchone()[0], 1915)
 
     def test_route_validation(self):
         """Проверяет нормализацию координат и отклонение неверных точек маршрута."""
@@ -78,7 +78,7 @@ class ApplicationTests(unittest.TestCase):
             with urlopen(base + '/api/bootstrap') as response:
                 self.assertEqual(len(json.load(response)['datasets']), 2)
             with urlopen(base + '/api/detectors?dataset=1') as response:
-                self.assertEqual(json.load(response)['total'], 3713)
+                self.assertEqual(json.load(response)['total'], 1313)
             fake = {'code': 'Ok', 'routes': [{'distance': 1000, 'duration': 120,
                     'geometry': {'type': 'LineString', 'coordinates': [[32,54],[32.01,54]]}}]}
             with patch('app.fetch_route', return_value=fake):

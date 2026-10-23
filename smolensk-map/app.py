@@ -144,17 +144,19 @@ def find_routes(coords, cameras, dataset, start, end):
     raw = fetch_route(coords)
     if raw.get('code') != 'Ok' or not raw.get('routes'):
         return raw
-    original = dict(raw['routes'][0], routeRole='original')
-    candidates = [original] + [r for r in raw['routes'][1:] if sensible_detour(r, original)]
+    shortest = min(raw['routes'], key=lambda r: (r['distance'], r['duration']))
+    original = dict(shortest, routeRole='original')
+    candidates = [original] + [r for r in raw['routes'] if r is not shortest and sensible_detour(r, original)]
     result = rank_routes(dict(raw, routes=candidates), cameras, dataset, start, end)
     routes = result.get('routes', [])
     if result.get('code') != 'Ok' or not routes:
         return result
-    congested = any(s['level'] in ('busy', 'jam') for s in routes[0]['traffic']['sections'])
+    original_scored = next(r for r in routes if r.get('routeRole') == 'original')
+    congested = any(s['level'] in ('busy', 'jam') for s in original_scored['traffic']['sections'])
     attempts, failures = 0, 0
     if congested:
         deadline = time.monotonic() + 45
-        for via in detour_points(routes[0]):
+        for via in detour_points(original_scored):
             if time.monotonic() >= deadline:
                 break
             time.sleep(1)
@@ -173,9 +175,15 @@ def find_routes(coords, cameras, dataset, start, end):
         result = rank_routes(dict(result, routes=routes), cameras, dataset, start, end)
     result['trafficContext'].update(detourAttempts=attempts, detourFailures=failures)
     original_scored = next(r for r in result['routes'] if r.get('routeRole') == 'original')
-    better = [r for r in result['routes'] if r.get('routeRole') != 'original'
-              and r['traffic']['duration'] < original_scored['traffic']['duration']]
-    result['routes'] = [dict(better[0], routeRole='detour'), original_scored] if better else [original_scored]
+    alternatives = [r for r in result['routes'] if r.get('routeRole') != 'original'
+                    and distinct_route(r, [original_scored])]
+    better = [r for r in alternatives if r['traffic']['duration'] < original_scored['traffic']['duration']]
+    if better:
+        result['routes'] = [dict(better[0], routeRole='detour'), original_scored]
+    elif congested and alternatives:
+        result['routes'] = [original_scored, dict(alternatives[0], routeRole='alternative')]
+    else:
+        result['routes'] = [original_scored]
     result['trafficContext']['displayed'] = len(result['routes'])
     return result
 
